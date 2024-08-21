@@ -1,0 +1,125 @@
+\section{Page Rank}
+Consider four websites where the directed links between them represent navigational paths from one website to another. The interaction of these websites can be visualized through a directed graph as follows:
+
+\begin{multicols}{2}
+\begin{center}
+    \begin{tikzpicture}[
+    SIR/.style={circle, draw=red!60, fill=red!5, very thick, minimum size=5mm},
+    node distance=2cm
+    ]
+    %Nodes
+    \node[SIR]    (1)                              {1};
+    \node[SIR]    (2)       [right=of 1] {2};
+    \node[SIR]    (3)       [below=of 1] {3};
+    \node[SIR]    (4)       [right=of 3] {4};
+    
+    %Lines
+    \draw[->, very thick] (1) -> (2);
+    \draw[->, very thick] (1) -> (4);
+    \draw[->, very thick] (2) -> (4);
+    \draw[->, very thick] (2) -> (1);
+    \draw[->, very thick] (3) -> (1);
+    \draw[->, very thick] (2) -> (3);
+    \draw[->, very thick] (4) -> (3);
+    \draw[->, very thick] (4) -> (1);
+    \end{tikzpicture}
+\end{center}
+
+The process of web surfing can be described as a series of random walks on this graph, leading to a steady state where \(\pi_i\) represents the probability of being on the \(i\)-th website. The probability vector \(\underline{\pi} \in \mathbb{R}^4\) for four websites is as follows:
+\end{multicols}
+
+We represent the linkage of these websites with an \textbf{Adjacency Matrix}:
+\[
+    \tilde{A} = \begin{bmatrix}
+        0 & 1 & 0 & 0\\
+        1 & 0 & 1 & 1\\
+        1 & 0 & 0 & 0\\
+        1 & 0 & 1 & 0\\
+    \end{bmatrix}
+\]
+\(\tilde{A}_{ij} = 1\) if there is a link from \(i\) to \(j\), and \(0\) otherwise. This matrix is then normalized so that each column sums to 1, resulting in:
+\[
+    A = \begin{bmatrix}
+        0   & 1/3 & 1/2 & 1/2\\
+        1/3 & 0   & 1/3 & 1/2\\
+        1/3 & 0   & 0   & 0\\
+        1/3 & 1/3 & 1/2 & 0\\
+    \end{bmatrix}
+\]
+
+Multiplying this matrix \(A\) by the canonical basis vector \(\underline{e}_3 = \begin{bmatrix} 0 & 0 & 1 & 0 \end{bmatrix}^\intercal\) demonstrates the transition probabilities from the third website:
+\[
+    A\underline{e}_3 = \begin{bmatrix}
+        1/2\\
+        1/2\\
+        0\\
+        1/2\\
+    \end{bmatrix}
+\]
+
+\subsection*{Steady State Analysis}
+The steady state is reached when the state vector \(\underline{\pi}\) satisfies:
+\[
+    A\underline{\pi} = \underline{\pi}
+\]
+Here, \(\underline{\pi}\) is an eigenvector of \(A\) associated with the eigenvalue 1. Using the Perron-Frobenius theorem for positive matrices (matrices with all non-negative coefficients), we know the largest eigenvalue \(\lambda_1 = 1\).
+
+\subsection*{Convergence via Power Method}
+The power method is employed to compute the eigenvector associated to the biggest eigenvalue in absolute value. The algorithm proceeds as follows:
+\begin{itemize}
+    \item Start with \(\underline{\pi}^{(0)}\) normalized to 1.
+    \item For \(k = 1, 2, \ldots\):
+    \[
+        \underline{\pi}^{(k)} = \frac{A\underline{\pi}^{(k-1)}}{||A\underline{\pi}^{(k-1)}||}
+    \]
+    \item Stop when \(\| \underline{\pi}^{(k)} - \underline{\pi}^{(k-1)} \| < \epsilon\).
+\end{itemize}
+
+As \(k \to \infty\), the method converges, isolating the principal eigenvector due to the dominance of \(\lambda_1\). This iterative process approximates \(\underline{\pi}\), estimating the long-term probabilities of visiting each website based on their interconnectedness. The closer the sub-dominant eigenvalues are to \(\lambda_1\), the slower the convergence.
+
+This means that, the steady state is the eigenvector of the matrix $A$ with eigenvalue 1. The matrix $A$ is positive (not positive-definite) i.e. it has all non-negative cohefficients. A positive matrix is denoted with $A > 0$.
+From Perron-Frobenius theory we know that $\lambda_1 = 1$ is the largest eigenvalue.
+\[
+    \lambda_1 = 1 > \lambda_2 > \lambda_3 > \dots > \lambda_n \hspace{1cm} \lambda_i \neq 0
+\] 
+As mentioned in a previous lecture, we can use the power method in order to retrieve the largest eigenvalue. In particular, we start from:
+\[
+    \underline{\pi}^{(0)} \hspace{0.5cm}\text{with}\hspace{0.5cm} ||\underline{\pi}^{(0)}||=1    
+\]
+Then, for $k = 1, 2, \dots $
+\[
+    \underline{\pi}^{(k)} = \dfrac{A\underline{\pi}^{(k-1)}}{||A\underline{\pi}^{(k-1)}||}    
+\]
+\[
+    \text{if } ||\underline{\pi}^{(k)} - \underline{\pi}^{(k-1)}|| < \epsilon \text{ then stop}    
+\]
+Obviously, $\epsilon$ represents a tolerance value. As we can see, there is an recursive definition in a sense that, at each iteration, the same operation is made on the same variable. For example:
+\[
+    \underline{\pi}^{(1)} = \dfrac{A\underline{\pi}^{(0)}}{||A\underline{\pi}^{(0)}||}    
+    \hspace{2cm}
+    \underline{\pi}^{(2)} = \dfrac{A\underline{\pi}^{(1)}}{||A\underline{\pi}^{(1)}||} = \dfrac{A^2\underline{\pi}^{()}}{||A^2\underline{\pi}^{(k-1)}||} 
+\]
+So, iterating k times:
+\[
+    \underline{\pi}^{(k)} = \dfrac{A^k\underline{\pi}^{(0)}}{||A^k\underline{\pi}^{(0)}||}     
+\]
+Since in $A$ there are no columns that are completely equal to 0, the matrix can be diagonalized. This implies that there are some $\underline{v}_i, i = 1, \dots, n$ that can used as a basis for the space. In particular we can write:
+\[
+    \underline{\pi}^{(0)} = \sum_{i=1}^n \alpha_i \underline{v}_i
+\]
+We want to plug this expression in the previous equation (power method). Before, notice that, $A\underline{v}_i = \lambda \underline{v}_i$ because $\underline{v}_i$ are the vectors which diagonalize $A$ so the ones such that $A = V\Lambda V^\intercal$. 
+The numerator of $\underline{\pi}^{(k)}$ can be written as:
+\[
+    A^k \underline{\pi}^{(0)} = \alpha_1\lambda_1^k \left(\underline{v}_1 + \sum_{i=2}^{n} \dfrac{\alpha_i}{\alpha_1}\left(\dfrac{\lambda_i}{\lambda_1}\right)^k \underline{v}_i\right)    
+\]
+\textbf{Proof:}
+    \begin{align*}
+                A^k \underline{\pi}^{(0)} &= V\Lambda^k V^{-1} \left(\alpha_1\underline{v}_1 + \dots + \alpha_n\underline{v}_n\right)\\
+        &= V\Lambda^k \left(\alpha_1\underline{e}_1 + \dots + \alpha_n\underline{e}_n\right)\\
+        &= V\left(\alpha_1\lambda_1^k\underline{e}_1 + \dots + \alpha_n\lambda_n^k\underline{e}_n \right)\\
+        &=\alpha_1\lambda_1^k\underline{v}_1 + \dots + \alpha_n\lambda_n^k\underline{v}_n\\ 
+        &= \alpha_1\lambda_1^k \left(\underline{v}_1 + \dfrac{\alpha_2}{\alpha_1}\left(\dfrac{\lambda_2}{\lambda_1}\right)^k \underline{v}_2 + \dots + \dfrac{\alpha_n}{\alpha_1}\left(\dfrac{\lambda_n}{\lambda_1}\right)^k \underline{v}_n\right)\\
+\end{align*}
+
+
+If $k \to \infty$ then $\left(\dfrac{\lambda_i}{\lambda_1}\right)^k \to 0$ because $\lambda_1 > \lambda_i$ for $i = 2, \dots, n$ . So, the only remaining term is $\underline{v}_1$ which is the eigenvector with the largest eigenvalue. So what we have just done is the proof of the convergence of the power method.The closer are the eigenvalues to $\lambda_1$ the slower is the convergence.

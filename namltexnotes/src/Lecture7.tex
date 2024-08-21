@@ -1,0 +1,158 @@
+
+\newpage
+
+\subsection*{Orthogonal Least Squares}
+In the last lecture we have introduced the least squares method. In particular we have mentioned the linear model for which:
+
+$$
+\underline{\hat{y}}=X \underline{\hat{w}} \quad X \in \mathbb{R}^{n \times p} \quad \underline{\hat{y}} \in \mathbb{R}^{n} \quad n \geq p \quad X \text { full rank }
+$$
+
+We have obtained:
+
+$$
+\underline{\hat{w}}=\left(X^{\top} X\right)^{-1} X^{\top} \underline{y} \Longrightarrow \underline{\hat{y}}=\underbrace{X\left(X^{\top} X\right)^{-1} X^{\top}}_{P_{x}} \underline{y}
+$$
+
+The matrix $P_{x}$ dimension is given by the product of: $(n \times p)(p \times p)(p \times n)=(n \times n)$ and has this properties:
+- $P_{x}=P_{x}^{2}$
+- $P_{x}$ is a projection matrix
+
+Let's consider $U$ an orthogonal $\left(U^{\top} U=I\right)$ matrix that contains the basis for $\mathcal{C}(X)$ this means that $\mathcal{C}(X)=\mathcal{C}(U)$. We can write:
+
+$$
+\underline{\hat{y}}=X \underline{\hat{w}}=U \underline{\tilde{w}}
+$$
+
+So this basically means that the predicted value of $y$ still a projection on a plane but this time the plane is spanned by the columns of $U$ and not by the columns of $X$. By substituting last equation in the minimization method for least squares we have:
+
+$$
+\underline{\tilde{w}}=\underset{\underline{w}}{\arg \min }\|\underline{y}-U \underline{w}\|_{2}^{2} \Longrightarrow \underline{\hat{y}}=U \underline{\tilde{w}}=U\left(U^{\top} U\right)^{-1} U^{\top} \underline{y}=U U^{\top} \underline{y}
+$$
+
+This formulation is possible because this time in the parenthesis we have an orthogonal matrix and this means that $\left(U^{\top} U\right)^{-1}=U^{\top} U=I$. In general $U U^{\top} \neq I$ because it might be rectangular (while $U^{\top} U$ is always square).\\ 
+How do we build the orthogonal matrix $U$ ? We can use the Gram-Schmidt procedure, but a drawback of Gram Schmidt is that, depending on the order chosen for the columns of $X$, the matrix $U$ can be different. Moreover, the order of vector columns of $U$ is meaningless.\\
+Now, we want to exploit the SVD for computing the orthogonal matrix $U$. We start from the SVD of $X$ :
+
+
+$$
+\begin{aligned}
+\underline{\hat{w}} & =\left(X^{\top} X\right)^{-1} X^{\top} y \\
+& =\left(V \Sigma^{\top} U^{\top} U \Sigma V^{\top}\right)^{-1} V \Sigma^{\top} U^{\top} \underline{y} \\
+& =\left(V \Sigma^{\top} \Sigma V^{\top}\right)^{-1} V \Sigma^{\top} U^{\top} \underline{y} \\
+& =V\left(\Sigma^{\top} \Sigma\right)^{-1} \underbrace{V^{\top} V}_{I} \Sigma^{\top} U^{\top} \underline{y} \\
+& = V\underbrace{\left(\Sigma^{\top} \Sigma\right)^{-1} \Sigma^{\top}}_{\Sigma^{+}} U^{\top} \underline{y} \\
+& = V\Sigma^{+} U^{\top} \underline{y} \\
+& = X^{+}\underline{y}
+\end{aligned}
+$$
+
+
+$\Sigma^{+}$il called the pseudo-inverse of $\Sigma$.
+
+Eventually, we have:
+
+
+\\
+Let's consider now the case in which \( p \geq n \) and \( X \) has \( n \) linearly independent rows (before we had \( p \) linearly independent columns). This means that we have more unknowns than equations and we would find infinite solutions for \(\underline{\hat{w}}\) such that \(\underline{\hat{y}} = X \underline{\hat{w}}\).
+
+The solution found before, \(\underline{\hat{w}} = V \Sigma^{+} U^{\top} \underline{y}\), is still valid, but now \(\Sigma^{+} = \Sigma^{\top} (\Sigma \Sigma^{\top})^{-1}\). This means it has the same shape as before but transposed. \\ \\
+Let's consider two vectors: w_\underline{w} and ˆw_\underline{\hat{w}}:
+
+\[
+\underline{y} = X \underline{w} = X \underline{\hat{w}}
+\]
+
+So they both are solutions of the system of equations.
+
+To prove that the vector \(\underline{\hat{w}} = V \Sigma^{+} U^{\top} \underline{y}\) is the solution with the minimum norm among all solutions \(\underline{w}\) of the system \(\underline{y} = X \underline{w}\), we will use the properties of the SVD and the orthogonality of the matrices \(U\) and \(V\).\\ \\
+We have that among the infinite solution, the one obtained through the psudo inverse is the on with minimal norm. \\
+\begin{theorem}
+For an underdetermined system $\underline{y} = X\underline{w}$, the solution $\hat{w}$ computed through the pseudoinverse has the minimum norm among all solutions.
+\end{theorem}
+
+\begin{proof}
+Let $w$ be any solution to the underdetermined system, and $\hat{w}$ be the solution computed through the pseudoinverse. We will show that $\|\hat{w}\|_2^2 \leq \|w\|_2^2$.
+
+We begin by expanding $\|w\|_2^2$:
+
+\begin{align*}
+\|w\|_2^2 &= \|w-\hat{w}+\hat{w}\|_2^2 \\
+&= (w-\hat{w}+\hat{w})^{\top}(w-\hat{w}+\hat{w}) \\
+&= (w-\hat{w})^{\top}(w-\hat{w}) + \hat{w}^{\top}\hat{w}li + 2(w-\hat{w})^{\top}\hat{w}
+\end{align*}
+
+Now, we use the following properties:
+
+\begin{enumerate}
+\item Both $w$ and $\hat{w}$ are solutions, so $Xw = X\hat{w} = y$. This implies $X(w - \hat{w}) = 0$, meaning $(w - \hat{w})$ is in the null space of $X$.\\
+
+\item $\hat{w}$, being the pseudoinverse solution, is orthogonal to the null space of $X$. Therefore, $(w - \hat{w})^{\top}\hat{w} = 0$.\\
+\end{enumerate}
+
+Using these properties, we can simplify our expansion:
+
+\begin{align*}
+\|w\|_2^2 &= (w-\hat{w})^{\top}(w-\hat{w}) + \hat{w}^{\top}w + 2(w-\hat{w})^{\top}\hat{w} \\
+&= (w-\hat{w})^{\top}(w-\hat{w}) + \hat{w}^{\top}\hat{w} + 0 \\
+&= \|w-\hat{w}\|_2^2 + \|\hat{w}\|_2^2
+\end{align*}
+
+Since $\|w-\hat{w}\|_2^2$ is always non-negative, we can conclude that:
+
+\begin{equation*}
+\|w\|_2^2 \geq \|\hat{w}\|_2^2
+\end{equation*}
+
+This inequality holds for any solution $w$. Therefore, $\hat{w}$ has the minimum norm among all solutions of the system $\underline{y} = X\underline{w}$.
+\end{proof}
+
+\newpage
+
+\section{Matrix completion}
+We start from 
+\[
+    X \in \mathbb{R}^{n \times p}  \hspace{0.5cm} rank(X) = r \ll \min(n,p) 
+\]
+We know only partially X, we know $X_{i,j} \texttt{for} (i,j)\in\Omega(i,j) \in \Omega.$ 
+
+Matrix completion is a method for filling missing values. If we had full rank matrix we would have independent columns so we would not be able to retrieve/obtain missing values. Being low rank, in this sense, helps us accomplishing this goal.  
+
+\subsection*{Ideal estimator}
+\[
+    \begin{cases}
+        \hat{X} = \underset{z \in \mathbb{R}^{n \times p}}{\arg \min} \left[\text{ rank}(z)\right]\\
+        \text{subject to } \hat{X_{ij}} = X_{ij} (i,j) \in \Omega
+    \end{cases}    
+\]
+This formulation is computationally unfeasible as  the object function is non-convex. Amongst all possible solutions, we are searching for the one with minimal rank.
+The problem is that this is a non-convex optimization problem which requires a lot of computational power to be solved.
+
+\subsection*{Practical estimator}
+We are going to use the \textbf{Nuclear norm}: $||\cdot||_*  = \sum\limits_{i=1}^{\min(n,p)}\sigma_i$.
+
+The idea is that, instead of minimizing the rank, we minimize the norm since, when performing the SVD, the number of non-zero singular values is equal to the rank of the matrix.
+\[
+    \begin{cases}
+        \hat{X} = \underset{z \in \mathbb{R}^{n \times p}}{\arg \min} ||z||_*\\
+        \text{subject to } \hat{X_{ij}} = X_{ij} (i,j) \in \Omega
+    \end{cases}    
+\]
+This new formulation is convex optimization problem. How are we going to solve this problem? With the \textbf{SVT (Singular Value Threshold)}. Here is the algorithm:
+\begin{itemize}
+    \item Initialize $\hat{X} = \texttt{zeros}(n,p)$
+    \item Set $\hat{X}_{ij} = X_{ij} \texttt{ for } (i,j) \in \Omega$
+    \item For $k = 1,2, \dots, N$  
+    \begin{itemize}
+        \item $\hat{X}_{old} = \hat{X}$
+        \item $[U, \Sigma, V^\intercal] = \texttt{svd}(\hat{X})$
+        \item $\Sigma \rightarrow \hat{\Sigma} \hspace{0.2cm} \begin{cases}
+            \hat{\sigma}_i = \sigma_i & \text{ if } \sigma_i > \tau\\
+            \hat{\sigma}_i = 0 & \text{ otherwise }
+        \end{cases}$
+        \item $\hat{X} = U\hat{\Sigma}V^\intercal$
+        \item $\hat{X}_{ij} = X_{ij} \texttt{ for } (i,j) \in \Omega$
+    \end{itemize}
+    \item $||\hat{X} - X_{old}|| < \epsilon$
+\end{itemize}
+The constant $\tau$ is imposing some sort of thresholding on the acceptance of singular values. This is an example of non-monothone algorithm because after the reduction of rank with the condition on sigmas, we override some value of the matrix to the one contained in $\Omega$. Is it proved that for a large enough index $k$ the algorithm converge to the solution. 

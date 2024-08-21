@@ -1,0 +1,103 @@
+\section{PCA}
+Here is a first real-world application of the SVD. PCA has the same aim as SVD i.e. find a way of projecting the dataset in a new space where variances are maximized and covariances are minimized. 
+
+We start from $A \in \mathbb{R}^{n \times d}$ and we follow these points:
+\begin{enumerate}[i]
+    \item \textbf{Center the matrix \emph{A}}\\
+    $\bar{A}$ is the mean centered with respect to columns while $H$ is called the centering matrix and is obtained as follows:
+    \[
+        H = I_n - \dfrac{1}{n} \underline{\mathbbm{1}}_n \underline{\mathbbm{1}}_n^\intercal
+    \]
+    Where $\underline{\mathbbm{1}}_n$ is the vector of dimension $n$ containing all ones. The centered matrix is obtained:
+    \[
+        \bar{A} = HA    
+    \]
+    \item Build the covariance matrix
+    \[
+        S = \dfrac{\bar{A}^\intercal \bar{A}}{n - 1}     
+    \]
+    Where the denominator is $n-1$ is because we want an unbiased estimator and it's not $n$ because we have already taken 1 degree of freedom by centering the matrix. The covariance matrix is semidefinite positive so we can use eigenvalues and eigenvectors decomposition.
+    \[
+        SV = VD \implies VDV^\intercal, D = V^\intercal SV    
+    \]
+    If you order the eigenvalues in decreasing order the corresponding eigenvectors are called principal components. To notice the relationship between SVD and PCA we can write:
+    \[
+        S = \dfrac{1}{n-1}\bar{A}^\intercal \bar{A} = \dfrac{1}{n-1} V\Sigma^\intercal U^\intercal U \Sigma V^\intercal = \dfrac{1}{n-1} V \Sigma^2 V^\intercal    
+    \]
+    \[
+        D = \dfrac{1}{n-1}\Sigma^2 \implies \lambda_k =\dfrac{\sigma_k^2}{n-1}    
+    \]
+\end{enumerate}
+PCA is SVD applied to a particular matrix.
+
+
+\subsection*{Choose rank of truncated SVD}
+When using truncated SVD, how to choose the rank $k$? One possibility is to use $k$ such that a predefined percentage of the variance is retained. Another idea starts from:
+\[
+    A = A_{true} + \gamma A_{noise}    
+\]
+Where: 
+\begin{itemize}
+    \item $A$: is out dataset
+    \item $A_{true}$: is the underlying low-rank representation of our data
+    \item $\gamma$: magnitude of the noise
+    \item $A_{noise}$: is a gaussian noise with 0 mean and unitary variance
+\end{itemize}
+By defining $\tau$ as threshold we have that if $sigma_i > \tau$ we are picking $A_{true}$. 
+There are two cases:
+\begin{itemize}
+    \item $\gamma$ is known, i.e. we know the magnitude of the noise:
+    \begin{itemize}
+        \item if $A \in \mathbb{R}^{n \times n}$ (square) then $\tau = \dfrac{4}{\sqrt{3}}\gamma \sqrt{n}$
+        \item if $A \in \mathbb{R}^{m \times n}$ we have two more cases:
+        \begin{itemize}
+            \item if $n \ll m \implies \tau = \lambda(\beta)$ where $\beta = \dfrac{n}{m}$ and $\lambda$ is the following function:
+            \[
+                \lambda(\beta) = \sqrt{2(\beta + 1) + \dfrac{8\beta}{(\beta+1)+\sqrt{(\beta^2 + 14\beta + 1))}}}    
+            \]
+            \item if $m \ll n \implies \tau = \lambda(\beta)$ where $\beta = \dfrac{m}{n}$ so it's equal as before but in this case the numerator and denumerator of $\beta$ are swapped.
+        \end{itemize}
+    \end{itemize}
+    \item $\gamma$ is unknown. We define $\tau$ as follows:
+    \[
+        \tau = \omega(\beta)\sigma_{med} \hspace{1cm} \omega(\beta) = \dfrac{\lambda(\beta)}{\mu_{\beta}}    
+    \]
+    In which $\sigma_{med}$ is the median of the singular values and $\mu_{\beta}$ is the median of the Marcenko-Pastur distribution. $\lambda(\beta)$ is the same function as before. In particular:
+    \[
+        \mu_{\beta} = \int_{(1-\beta)^2}^{\mu_{\beta}} \dfrac{\sqrt{((1- \sqrt{\beta})^2 - t)(t - (1- \sqrt{\beta})^2)}}{2\pi t} dt = \dfrac{1}{2}    
+    \]
+\end{itemize}
+
+\subsection*{Randomized SVD}
+
+Randomized SVD is a faster and more efficient way to compute the truncated SVD, especially for large matrices. The key idea is to project the original matrix onto a lower-dimensional subspace using a random matrix, and then perform the SVD on the reduced matrix. The steps are as follows:
+
+\begin{enumerate}
+
+    \item Given an input matrix $A \in \mathbb{R}^{m \times n}$ and a target rank $k$, generate a random matrix $\Omega \in \mathbb{R}^{n \times k}$ whose entries are independent and identically distributed Gaussian random variables with zero mean and unit variance.
+
+    
+
+    \item Compute the matrix product $Y = A\Omega \in \mathbb{R}^{m \times k}$, which projects the columns of $A$ onto a $k$-dimensional subspace.
+
+    
+
+    \item Compute the QR decomposition of $Y$: $Y = QR$, where $Q \in \mathbb{R}^{m \times k}$ has orthonormal columns and $R \in \mathbb{R}^{k \times k}$ is upper triangular.
+
+    
+
+    \item Form the matrix $B = Q^T A \in \mathbb{R}^{k \times n}$, which is a low-rank approximation of $A$.
+
+    
+
+    \item Compute the SVD of the small matrix $B$: $B = \tilde{U} \Sigma V^T$, where $\tilde{U} \in \mathbb{R}^{k \times k}$, $\Sigma \in \mathbb{R}^{k \times k}$, and $V \in \mathbb{R}^{n \times k}$.
+
+    
+
+    \item Form the matrix $U = Q\tilde{U} \in \mathbb{R}^{m \times k}$, which contains the left singular vectors of $A$.
+
+\end{enumerate}
+
+The resulting matrices $U$, $\Sigma$, and $V$ form a rank-$k$ approximation of the SVD of $A$: $A \approx U\Sigma V^T$. The approximation error depends on the choice of the target rank $k$ and the quality of the random projection. In practice, the error can be controlled by oversampling, i.e., choosing a larger value for $k$ and then truncating the SVD to the desired rank.
+
+The main advantage of randomized SVD is its computational efficiency. The algorithm requires only a few passes over the input matrix $A$ and avoids the expensive computation of the full SVD. This makes it particularly well-suited for large-scale problems where the full SVD is infeasible or prohibitively expensive.
